@@ -1,13 +1,85 @@
 ;; -*- mode:scheme -*-
 
 (c-system-include "X11/Xlib.h")
+(c-system-include "X11/Xutil.h")
 
+(define-c-int-type Atom)
+(define-c-int-type Colormap)
+(define-c-int-type Drawable)
+(define-c-int-type Font)
+(define-c-int-type GContext)
+(define-c-int-type KeySym)
+(define-c-int-type Mask)
+(define-c-int-type Pixmap)
+(define-c-int-type Status)
+(define-c-int-type Time)
+(define-c-int-type VisualID)
+(define-c-int-type Window)
+(define-c-int-type XID)
+
+(define-c-type Depth)
 (define-c-type Display)
+(define-c-type GC)
+(define-c-type Screen)
+(define-c-type ScreenFormat)
 (define-c-type Visual)
-(define-c-type Window)
 
 (define-c (pointer Display) XOpenDisplay ((maybe-null char*)))
 (define-c int XCloseDisplay ((pointer Display)))
 
-(define-c int DefaultStreen ((pointer Display)))
+;; AllPlanes
+(define-c unsigned-long BlackPixel ((pointer Display) int))
+(define-c unsigned-long WhitePixel ((pointer Display) int))
+(define-c int ConnectionNumber ((pointer Display)))
+(define-c Colormap DefaultColormap ((pointer Display) int))
+(define-c int DefaultDepth ((pointer Display) int))
+;; TODO: XListDepths produces a warning. I don't know why.
+;; Xlib.c:193: warning: passing argument 2 of ‘sexp_make_integer’ makes integer from pointer without a cast
+;; (define-c (pointer int) XListDepths ((pointer Display) int (pointer int)))
+(define-c GC DefaultGC ((pointer Display) int))
+(define-c Window DefaultRootWindow ((pointer Display)))
+(define-c (pointer Screen) DefaultScreenOfDisplay ((pointer Display)))
+(define-c int DefaultScreen ((pointer Display)))
 (define-c (pointer Visual) DefaultVisual ((pointer Display) int))
+(define-c int DisplayCells ((pointer Display) int))
+(define-c int DisplayPlanes ((pointer Display) int))
+(define-c char* DisplayString ((pointer Display)))
+(define-c long XMaxRequestSize ((pointer Display)))
+(define-c long XExtendedMaxRequestSize ((pointer Display)))
+(define-c unsigned-long LastKnownRequestProcessed ((pointer Display)))
+(define-c unsigned-long NextRequest ((pointer Display)))
+(define-c int ProtocolVersion ((pointer Display)))
+(define-c int ProtocolRevision ((pointer Display)))
+(define-c int QLength ((pointer Display)))
+(define-c Window RootWindow ((pointer Display) int))
+(define-c int ScreenCount ((pointer Display)))
+(define-c (pointer Screen) ScreenOfDisplay ((pointer Display) int))
+(define-c char* ServerVendor ((pointer Display)))
+(define-c int VendorRelease ((pointer Display)))
+
+;; XCreateWindow
+(define-c Window XCreateSimpleWindow
+  ((pointer Display) Window int int unsigned-int unsigned-int unsigned-int
+   unsigned-long unsigned-long))
+
+;; XSelectInput
+(define-c int XSelectInput ((pointer Display) Window long))
+
+;; XMapWindow
+(define-c int XMapWindow ((pointer Display) Window))
+(define-c int XMapRaised ((pointer Display) Window))
+(define-c int XMapSubwindows ((pointer Display) Window))
+
+;; XInternAtom
+(define-c Atom XInternAtom ((pointer Display) char* boolean))
+(define-c Status XInternAtoms
+  ((pointer Display) (pointer char*) int boolean (pointer Atom)))
+(define-c char* XGetAtomName ((pointer Display) Atom))
+(define-c Status XGetAtomNames
+  ((pointer Display) (pointer Atom) int (pointer char*)))
+
+;; XSetWMProtocols
+(define-c Status XSetWMProtocols
+  ((pointer Display) Window (pointer Atom) int))
+(define-c Status XGetWMProtocols
+  ((pointer Display) Window (pointer Atom*) (pointer int)))

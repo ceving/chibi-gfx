@@ -28,3 +28,6 @@ install: $(MODULESO)
 
 $(MODULESO): $(MODULEC)
 	$(CC) -fPIC -shared -lX11 -o $@ $<
+
+gfx: gfx.c
+	gcc -o gfx -lX11 -lm gfx.c
