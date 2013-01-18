@@ -3,83 +3,374 @@
 (c-system-include "X11/Xlib.h")
 (c-system-include "X11/Xutil.h")
 
-(define-c-int-type Atom)
-(define-c-int-type Colormap)
-(define-c-int-type Drawable)
-(define-c-int-type Font)
-(define-c-int-type GContext)
-(define-c-int-type KeySym)
-(define-c-int-type Mask)
-(define-c-int-type Pixmap)
-(define-c-int-type Status)
-(define-c-int-type Time)
-(define-c-int-type VisualID)
-(define-c-int-type Window)
+;; Unification for types lacking the X prefix.
+(c-declare "typedef Atom XAtom;")
+(c-declare "typedef Colormap XColormap;")
+(c-declare "typedef Drawable XDrawable;")
+(c-declare "typedef Font XFont;")
+(c-declare "typedef GContext XGContext;")
+(c-declare "typedef KeySym XKeySym;")
+(c-declare "typedef Mask XMask;")
+(c-declare "typedef Pixmap XPixmap;")
+(c-declare "typedef Status XStatus;")
+(c-declare "typedef Time XTime;")
+(c-declare "typedef VisualID XVisualID;")
+(c-declare "typedef Window XWindow;")
+(c-declare "typedef Depth XDepth;")
+(c-declare "typedef Display XDisplay;")
+(c-declare "typedef GC XGC;")
+(c-declare "typedef Screen XScreen;")
+(c-declare "typedef ScreenFormat XScreenFormat;")
+(c-declare "typedef Visual XVisual;")
+
+;; Integer types
+(define-c-int-type XAtom)
+(define-c-int-type XColormap)
+(define-c-int-type XDrawable)
+(define-c-int-type XFont)
+(define-c-int-type XGContext)
+(define-c-int-type XKeySym)
+(define-c-int-type XMask)
+(define-c-int-type XPixmap)
+(define-c-int-type XStatus)
+(define-c-int-type XTime)
+(define-c-int-type XVisualID)
+(define-c-int-type XWindow)
 (define-c-int-type XID)
 
-(define-c-type Depth)
-(define-c-type Display)
-(define-c-type GC)
-(define-c-type Screen)
-(define-c-type ScreenFormat)
-(define-c-type Visual)
+;; Struct types
+(define-c-type XDepth predicate: XDepth?)
+(define-c-type XDisplay predicate: XDisplay?)
+(define-c-type XEvent predicate: XEvent?)
+(define-c-type XGC predicate: XGC?)
+(define-c-type XImage predicate: XImage?)
+(define-c-type XScreen predicate: XScreen?)
+(define-c-type XScreenFormat predicate: XScreenFormat?)
+(define-c-type XVisual predicate: XVisual?)
 
-(define-c (pointer Display) XOpenDisplay ((maybe-null char*)))
-(define-c int XCloseDisplay ((pointer Display)))
+;; Event struct types
+(define-c-type XAnyEvent predicate: XAnyEvent?)
+(define-c-type XKeyEvent predicate: XKeyEvent?)
+(define-c-type XButtonEvent predicate: XButtonEvent?)
+(define-c-type XMotionEvent predicate: XMotionEvent?)
+(define-c-type XCrossingEvent predicate: XCrossingEvent?)
+(define-c-type XFocusChangeEvent predicate: XFocusChangeEvent?)
+(define-c-type XExposeEvent predicate: XExposeEvent?)
+(define-c-type XGraphicsExposeEvent predicate: XGraphicsExposeEvent?)
+(define-c-type XNoExposeEvent predicate: XNoExposeEvent?)
+(define-c-type XVisibilityEvent predicate: XVisibilityEvent?)
+(define-c-type XCreateWindowEvent predicate: XCreateWindowEvent?)
+(define-c-type XDestroyWindowEvent predicate: XDestroyWindowEvent?)
+(define-c-type XUnmapEvent predicate: XUnmapEvent?)
+(define-c-type XMapEvent predicate: XMapEvent?)
+(define-c-type XMapRequestEvent predicate: XMapRequestEvent?)
+(define-c-type XReparentEvent predicate: XReparentEvent?)
+(define-c-type XConfigureEvent predicate: XConfigureEvent?)
+(define-c-type XGravityEvent predicate: XGravityEvent?)
+(define-c-type XResizeRequestEvent predicate: XResizeRequestEvent?)
+(define-c-type XConfigureRequestEvent predicate: XConfigureRequestEvent?)
+(define-c-type XCirculateEvent predicate: XCirculateEvent?)
+(define-c-type XCirculateRequestEvent predicate: XCirculateRequestEvent?)
+(define-c-type XPropertyEvent predicate: XPropertyEvent?)
+(define-c-type XSelectionClearEvent predicate: XSelectionClearEvent?)
+(define-c-type XSelectionRequestEvent predicate: XSelectionRequestEvent?)
+(define-c-type XSelectionEvent predicate: XSelectionEvent?)
+(define-c-type XColormapEvent predicate: XColormapEvent?)
+(define-c-type XClientMessageEvent predicate: XClientMessageEvent?)
+(define-c-type XMappingEvent predicate: XMappingEvent?)
+(define-c-type XErrorEvent predicate: XErrorEvent?)
+(define-c-type XKeymapEvent predicate: XKeymapEvent?)
 
-;; AllPlanes
-(define-c unsigned-long BlackPixel ((pointer Display) int))
-(define-c unsigned-long WhitePixel ((pointer Display) int))
-(define-c int ConnectionNumber ((pointer Display)))
-(define-c Colormap DefaultColormap ((pointer Display) int))
-(define-c int DefaultDepth ((pointer Display) int))
+;; Functions from the XOpenDisplay man page
+(define-c (pointer XDisplay) XOpenDisplay ((maybe-null char*)))
+(define-c int XCloseDisplay ((pointer XDisplay)))
+
+;; Functions from the AllPlanes man page
+(define-c unsigned-long (XBlackPixel "BlackPixel")
+  ((pointer XDisplay) int))
+(define-c unsigned-long (XWhitePixel "WhitePixel")
+  ((pointer XDisplay) int))
+(define-c int (XConnectionNumber "ConnectionNumber")
+  ((pointer XDisplay)))
+(define-c XColormap (XDefaultColormap "DefaultColormap")
+  ((pointer XDisplay) int))
+(define-c int (XDefaultDepth "DefaultDepth")
+  ((pointer XDisplay) int))
 ;; TODO: XListDepths produces a warning. I don't know why.
 ;; Xlib.c:193: warning: passing argument 2 of ‘sexp_make_integer’ makes integer from pointer without a cast
-;; (define-c (pointer int) XListDepths ((pointer Display) int (pointer int)))
-(define-c GC DefaultGC ((pointer Display) int))
-(define-c Window DefaultRootWindow ((pointer Display)))
-(define-c (pointer Screen) DefaultScreenOfDisplay ((pointer Display)))
-(define-c int DefaultScreen ((pointer Display)))
-(define-c (pointer Visual) DefaultVisual ((pointer Display) int))
-(define-c int DisplayCells ((pointer Display) int))
-(define-c int DisplayPlanes ((pointer Display) int))
-(define-c char* DisplayString ((pointer Display)))
-(define-c long XMaxRequestSize ((pointer Display)))
-(define-c long XExtendedMaxRequestSize ((pointer Display)))
-(define-c unsigned-long LastKnownRequestProcessed ((pointer Display)))
-(define-c unsigned-long NextRequest ((pointer Display)))
-(define-c int ProtocolVersion ((pointer Display)))
-(define-c int ProtocolRevision ((pointer Display)))
-(define-c int QLength ((pointer Display)))
-(define-c Window RootWindow ((pointer Display) int))
-(define-c int ScreenCount ((pointer Display)))
-(define-c (pointer Screen) ScreenOfDisplay ((pointer Display) int))
-(define-c char* ServerVendor ((pointer Display)))
-(define-c int VendorRelease ((pointer Display)))
+;; (define-c (pointer int) XListDepths ((pointer XDisplay) int (pointer int)))
+(define-c XGC (XDefaultGC "DefaultGC")
+  ((pointer XDisplay) int))
+(define-c XWindow (XDefaultRootWindow "DefaultRootWindow")
+  ((pointer XDisplay)))
+(define-c (pointer XScreen) (XDefaultScreenOfDisplay "DefaultScreenOfDisplay")
+  ((pointer XDisplay)))
+(define-c int (XDefaultScreen "DefaultScreen")
+  ((pointer XDisplay)))
+(define-c (pointer XVisual) (XDefaultVisual "DefaultVisual")
+  ((pointer XDisplay) int))
+(define-c int (XDisplayCells "DisplayCells")
+  ((pointer XDisplay) int))
+(define-c int (XDisplayPlanes "DisplayPlanes")
+  ((pointer XDisplay) int))
+(define-c char* (XDisplayString "DisplayString")
+  ((pointer XDisplay)))
+(define-c long XMaxRequestSize ((pointer XDisplay)))
+(define-c long XExtendedMaxRequestSize ((pointer XDisplay)))
+(define-c unsigned-long XLastKnownRequestProcessed
+  ((pointer XDisplay)))
+(define-c unsigned-long (XNextRequest "NextRequest")
+  ((pointer XDisplay)))
+(define-c int (XProtocolVersion "ProtocolVersion")
+  ((pointer XDisplay)))
+(define-c int (XProtocolRevision "ProtocolRevision")
+  ((pointer XDisplay)))
+(define-c int (XQLength "QLength")
+  ((pointer XDisplay)))
+(define-c XWindow (XRootWindow "RootWindow")
+  ((pointer XDisplay) int))
+(define-c int (XScreenCount "ScreenCount")
+  ((pointer XDisplay)))
+(define-c (pointer XScreen) (XScreenOfDisplay "ScreenOfDisplay")
+  ((pointer XDisplay) int))
+(define-c char* (XServerVendor "ServerVendor")
+  ((pointer XDisplay)))
+(define-c int (XVendorRelease "VendorRelease")
+  ((pointer XDisplay)))
 
-;; XCreateWindow
-(define-c Window XCreateSimpleWindow
-  ((pointer Display) Window int int unsigned-int unsigned-int unsigned-int
+;; Functions from the XCreateWindow man page
+(define-c XWindow XCreateSimpleWindow
+  ((pointer XDisplay) XWindow int int unsigned-int unsigned-int unsigned-int
    unsigned-long unsigned-long))
 
-;; XSelectInput
-(define-c int XSelectInput ((pointer Display) Window long))
+;; Functions from the XSelectInput man page
+(define-c int XSelectInput ((pointer XDisplay) XWindow long))
 
-;; XMapWindow
-(define-c int XMapWindow ((pointer Display) Window))
-(define-c int XMapRaised ((pointer Display) Window))
-(define-c int XMapSubwindows ((pointer Display) Window))
+;; Functions from the XMapWindow man page
+(define-c int XMapWindow ((pointer XDisplay) XWindow))
+(define-c int XMapRaised ((pointer XDisplay) XWindow))
+(define-c int XMapSubwindows ((pointer XDisplay) XWindow))
 
-;; XInternAtom
-(define-c Atom XInternAtom ((pointer Display) char* boolean))
-(define-c Status XInternAtoms
-  ((pointer Display) (pointer char*) int boolean (pointer Atom)))
-(define-c char* XGetAtomName ((pointer Display) Atom))
-(define-c Status XGetAtomNames
-  ((pointer Display) (pointer Atom) int (pointer char*)))
+;; Functions from the XInternAtom man page
+(define-c XAtom XInternAtom ((pointer XDisplay) char* int))
+(define-c XStatus XInternAtoms
+  ((pointer XDisplay) (pointer char*) int boolean (pointer XAtom)))
+(define-c char* XGetAtomName ((pointer XDisplay) XAtom))
+(define-c XStatus XGetAtomNames
+  ((pointer XDisplay) (pointer XAtom) int (pointer char*)))
 
-;; XSetWMProtocols
-(define-c Status XSetWMProtocols
-  ((pointer Display) Window (pointer Atom) int))
-(define-c Status XGetWMProtocols
-  ((pointer Display) Window (pointer Atom*) (pointer int)))
+;; Functions from the XSetWMProtocols man page
+(define-c XStatus XSetWMProtocols
+  ((pointer XDisplay) XWindow (pointer XAtom) int))
+;; TODO: pointer of pointer (Atom**) not supported
+;;(define-c XStatus XGetWMProtocols ((pointer XDisplay) XWindow (pointer XAtom*) (pointer int)))
+
+;; Functions from the XNextEvent man page
+(define-c int (XNextEvent% "XNextEvent")
+  ((pointer XDisplay) (result pointer XEvent)))
+(define-c int XPeekEvent
+  ((pointer XDisplay) (result pointer XEvent)))
+(define-c int XWindowEvent
+  ((pointer XDisplay) XWindow long (result pointer XEvent)))
+(define-c boolean XCheckWindowEvent
+  ((pointer XDisplay) XWindow long (result pointer XEvent)))
+(define-c int XMaskEvent
+  ((pointer XDisplay) long (result pointer XEvent)))
+(define-c boolean XCheckMaskEvent
+  ((pointer XDisplay) long (result pointer XEvent)))
+(define-c boolean XCheckTypedEvent
+  ((pointer XDisplay) int (result pointer XEvent)))
+(define-c boolean XCheckTypedWindowEvent
+  ((pointer XDisplay) XWindow int (result pointer XEvent)))
+
+;; Functions from the XCreateImage man page
+(define-c XStatus XInitImage ((pointer XImage)))
+(define-c (pointer XImage) XCreateImage
+  ((pointer XDisplay) (pointer XVisual) unsigned-int int int char*
+   unsigned-int unsigned-int int int))
+(define-c unsigned-long XGetPixel ((pointer XImage) int int))
+(define-c int XPutPixel ((pointer XImage) int int unsigned-long))
+(define-c (pointer XImage) XSubImage
+  ((pointer XImage) int int unsigned-int unsigned-int))
+(define-c int XAddPixel ((pointer XImage) long))
+(define-c int XDestroyImage ((pointer XImage)))
+
+;; Functions from the XPutImage man page
+(define-c int XPutImage 
+  ((pointer XDisplay) XDrawable XGC (pointer XImage) int int int int
+   unsigned-int unsigned-int))
+(define-c (pointer XImage) XGetImage
+  ((pointer XDisplay) XDrawable int int unsigned-int unsigned-int
+   unsigned-long int))
+(define-c (pointer XImage) XGetSubImage
+  ((pointer XDisplay) XDrawable int int unsigned-int unsigned-int
+   unsigned-long int (pointer XImage) int int))
+
+;; C macros for some struct fields
+(c-declare "#define XEventType(event) ((event)->type)")
+(c-declare "#define XClientMessageDataAtom0(event) ((event)->data.l[0])")
+(c-declare "#define XVisualClass(visual) ((visual)->class)")
+
+;; Some getter functions for struct fields
+(define-c int XEventType ((pointer XEvent)))
+(define-c int XClientMessageDataAtom0 ((pointer XClientMessageEvent)))
+(define-c int XVisualClass ((pointer XVisual)))
+
+;; C macros for event conversion
+(c-declare "#define _XToXAnyEvent(event) ((XAnyEvent*)(event))")
+(c-declare "#define _XToXKeyEvent(event) ((XKeyEvent*)(event))")
+(c-declare "#define _XToXButtonEvent(event) ((XButtonEvent*)(event))")
+(c-declare "#define _XToXMotionEvent(event) ((XMotionEvent*)(event))")
+(c-declare "#define _XToXCrossingEvent(event) ((XCrossingEvent*)(event))")
+(c-declare "#define _XToXFocusChangeEvent(event) ((XFocusChangeEvent*)(event))")
+(c-declare "#define _XToXExposeEvent(event) ((XExposeEvent*)(event))")
+(c-declare "#define _XToXGraphicsExposeEvent(event) ((XGraphicsExposeEvent*)(event))")
+(c-declare "#define _XToXNoExposeEvent(event) ((XNoExposeEvent*)(event))")
+(c-declare "#define _XToXVisibilityEvent(event) ((XVisibilityEvent*)(event))")
+(c-declare "#define _XToXCreateWindowEvent(event) ((XCreateWindowEvent*)(event))")
+(c-declare "#define _XToXDestroyWindowEvent(event) ((XDestroyWindowEvent*)(event))")
+(c-declare "#define _XToXUnmapEvent(event) ((XUnmapEvent*)(event))")
+(c-declare "#define _XToXMapEvent(event) ((XMapEvent*)(event))")
+(c-declare "#define _XToXMapRequestEvent(event) ((XMapRequestEvent*)(event))")
+(c-declare "#define _XToXReparentEvent(event) ((XReparentEvent*)(event))")
+(c-declare "#define _XToXConfigureEvent(event) ((XConfigureEvent*)(event))")
+(c-declare "#define _XToXGravityEvent(event) ((XGravityEvent*)(event))")
+(c-declare "#define _XToXResizeRequestEvent(event) ((XResizeRequestEvent*)(event))")
+(c-declare "#define _XToXConfigureRequestEvent(event) ((XConfigureRequestEvent*)(event))")
+(c-declare "#define _XToXCirculateEvent(event) ((XCirculateEvent*)(event))")
+(c-declare "#define _XToXCirculateRequestEvent(event) ((XCirculateRequestEvent*)(event))")
+(c-declare "#define _XToXPropertyEvent(event) ((XPropertyEvent*)(event))")
+(c-declare "#define _XToXSelectionClearEvent(event) ((XSelectionClearEvent*)(event))")
+(c-declare "#define _XToXSelectionRequestEvent(event) ((XSelectionRequestEvent*)(event))")
+(c-declare "#define _XToXSelectionEvent(event) ((XSelectionEvent*)(event))")
+(c-declare "#define _XToXColormapEvent(event) ((XColormapEvent*)(event))")
+(c-declare "#define _XToXClientMessageEvent(event) ((XClientMessageEvent*)(event))")
+(c-declare "#define _XToXMappingEvent(event) ((XMappingEvent*)(event))")
+(c-declare "#define _XToXErrorEvent(event) ((XErrorEvent*)(event))")
+(c-declare "#define _XToXKeymapEvent(event) ((XKeymapEvent*)(event))")
+
+;; Event conversion functions
+(define-c
+  (pointer XAnyEvent)
+  (XToXAnyEvent% "_XToXAnyEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XKeyEvent)
+  (XToXKeyEvent% "_XToXKeyEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XButtonEvent)
+  (XToXButtonEvent% "_XToXButtonEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XMotionEvent)
+  (XToXMotionEvent% "_XToXMotionEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XCrossingEvent)
+  (XToXCrossingEvent% "_XToXCrossingEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XFocusChangeEvent)
+  (XToXFocusChangeEvent% "_XToXFocusChangeEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XExposeEvent)
+  (XToXExposeEvent% "_XToXExposeEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XGraphicsExposeEvent)
+  (XToXGraphicsExposeEvent% "_XToXGraphicsExposeEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XNoExposeEvent)
+  (XToXNoExposeEvent% "_XToXNoExposeEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XVisibilityEvent)
+  (XToXVisibilityEvent% "_XToXVisibilityEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XCreateWindowEvent)
+  (XToXCreateWindowEvent% "_XToXCreateWindowEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XDestroyWindowEvent)
+  (XToXDestroyWindowEvent% "_XToXDestroyWindowEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XUnmapEvent)
+  (XToXUnmapEvent% "_XToXUnmapEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XMapEvent)
+  (XToXMapEvent% "_XToXMapEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XMapRequestEvent)
+  (XToXMapRequestEvent% "_XToXMapRequestEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XReparentEvent)
+  (XToXReparentEvent% "_XToXReparentEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XConfigureEvent)
+  (XToXConfigureEvent% "_XToXConfigureEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XGravityEvent)
+  (XToXGravityEvent% "_XToXGravityEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XResizeRequestEvent)
+  (XToXResizeRequestEvent% "_XToXResizeRequestEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XConfigureRequestEvent)
+  (XToXConfigureRequestEvent% "_XToXConfigureRequestEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XCirculateEvent)
+  (XToXCirculateEvent% "_XToXCirculateEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XCirculateRequestEvent)
+  (XToXCirculateRequestEvent% "_XToXCirculateRequestEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XPropertyEvent)
+  (XToXPropertyEvent% "_XToXPropertyEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XSelectionClearEvent)
+  (XToXSelectionClearEvent% "_XToXSelectionClearEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XSelectionRequestEvent)
+  (XToXSelectionRequestEvent% "_XToXSelectionRequestEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XSelectionEvent)
+  (XToXSelectionEvent% "_XToXSelectionEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XColormapEvent)
+  (XToXColormapEvent% "_XToXColormapEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XClientMessageEvent)
+  (XToXClientMessageEvent% "_XToXClientMessageEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XMappingEvent)
+  (XToXMappingEvent% "_XToXMappingEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XErrorEvent)
+  (XToXErrorEvent% "_XToXErrorEvent")
+  ((pointer XEvent)))
+(define-c
+  (pointer XKeymapEvent)
+  (XToXKeymapEvent% "_XToXKeymapEvent")
+  ((pointer XEvent)))
