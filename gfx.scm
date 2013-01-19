@@ -1,6 +1,6 @@
 (begin
 
-(load "chibi-xlib.so")
+(load "./chibi-xlib.so")
 
 (define-syntax ->
   (syntax-rules ()
@@ -56,69 +56,27 @@
 ;; (put 'event-loop 'scheme-indent-function 1)
 (define-syntax event-loop
   (syntax-rules (else)
-    ((event-loop event ((predicate) . body) ... (else . else-body))
+    ((event-loop ((event get-event)) (condition . body) ... (else . else-body))
      (let loop ()
-       (let ((ev event))
+       (let ((event get-event))
          (cond 
-          ((predicate ev) . body)
+          (condition . body)
           ...
           (else . else-body)))
        (loop)))
-    ((event-loop event ((predicate) . body) ...)
-     (event-loop event
-       ((predicate) . body)
+    ((event-loop ((event get-event)) (condition . body) ...)
+     (event-loop ((event get-event))
+       (condition . body)
        ...
        (else (error "unhandled event"))))))
 
 ;;(event-loop (XNextEvent disp)
 ;;   ((Expose) (display "expose\n")))
 
-(let ((v (make-vector 1)))
-  (vector-set! v 0 0)
-  v))
+(define (XNextEvent xdisplay) (cadr (XNextEvent% xdisplay)))
 
-(define XNextEvent
-  (let ((convert (make-vector XLASTEvent)))
-    (vector-set!  XKeyPress
-  xdisplay)
-  (let ((event (XNextEvent% xdisplay)))
-    (if (and (pair? event)
-             (eq? (car event) 0))
-        (let* ((event (cadr event))
-               (type (XEventType event)))
-          (cond 
-           ((XExpose? type) (X
-        #f)))
+;;(define (XButtonPressedEvent? event) (= (XEventType event) XButtonPress))
 
-
-(define-syntax define-event-type-predicates
-  (syntax-rules ()
-    ((define-event-type-predicates (predicate type) ...)
-     (begin
-       (define (predicate event) (eq? (XEventType event) type))
-       ...))))
-
-(define-event-type-predicates
-  (XExpose? XExpose)
-  (XButtonPress? XButtonPress)
-  (XClientMessage? XClientMessage)
-  )
-
-
-)
-
-(define (next-event* disp)
-  (let ((event (XNextEvent disp)))
-    (if (and (pair? event)
-             (eq? (car event) 0))
-        (let* ((event (cadr event))
-               (type (XEventType event)))
-          (cond 
-           ((= type XClientMessage) (XToClientMessageEvent event))
-           (else event)))
-        #f)))
-
-    
 
 (with-x-display (xdisplay)
   (with-return (return)
@@ -126,12 +84,15 @@
                     xdisplay
                     (XRootWindow xdisplay (XDefaultScreen xdisplay))
                     0 0 800 600 1 0 0))
-          (xwmdelwinmsg (XInternAtom xdisplay "WM_DELETE_WINDOW" 0)))
+          (xwmdelwinmsg (XInternAtom xdisplay "WM_DELETE_WINDOW" 0))
+	  )
       (XSelectInput xdisplay xwindow (+ XButtonPressMask XExposureMask))
       (XMapWindow xdisplay xwindow)
       (XSetWMProtocols xdisplay xwindow xwmdelwinmsg 1)
-      (XEventLoop (xdisplay xevent)
-        ((XExpose) (display* xevent #\newline))
-        ((XButtonPress) (display* xevent #\newline))
-        ((XClientMessage) (return 0))))))
-
+      (event-loop ((xevent (XNextEvent xdisplay)))
+	((XExposeEvent? xevent) (display "expose\n"))
+        ((XButtonPressedEvent? xevent) (display "button-press\n"))
+        ((XClientMessageEvent? xevent) (return 0))
+	(else (display* "unknown event: " xevent)))
+      )))
+)

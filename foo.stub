@@ -106,3 +106,34 @@ XKeymapEvent
 #define MappingNotify           34
 #define LASTEvent               35      /* must be bigger than any event # */
 
+(c-declare "#define XIsClientMessageEvent(event) (XEventType(event) == ClientMessage)")
+XKeyEvent
+XButtonEvent
+XMotionEvent
+XCrossingEvent
+XFocusChangeEvent
+XExposeEvent
+XGraphicsExposeEvent
+XNoExposeEvent
+XVisibilityEvent
+XCreateWindowEvent
+XDestroyWindowEvent
+XUnmapEvent
+XMapEvent
+XMapRequestEvent
+XReparentEvent
+XConfigureEvent
+XGravityEvent
+XResizeRequestEvent
+XConfigureRequestEvent
+XCirculateEvent
+XCirculateRequestEvent
+XPropertyEvent
+XSelectionClearEvent
+XSelectionRequestEvent
+XSelectionEvent
+XColormapEvent
+XClientMessageEvent
+XMappingEvent
+XErrorEvent
+XKeymapEvent
