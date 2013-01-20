@@ -25,24 +25,6 @@
      (begin (display first)
             (display* second ...)))))
 
-;; (put 'with-x-display 'scheme-indent-function 1)
-;; (font-lock-add-keywords 'scheme-mode '(("with-x-display" . font-lock-keyword-face)))
-(define-syntax with-x-display
-  (syntax-rules ()
-    ((with-x-display (display-name connection) body ...)
-     (let ((connection #f))
-       (dynamic-wind
-           (lambda ()
-             (set! connection (XOpenDisplay display-name)))
-           (lambda ()
-             body
-             ...)
-           (lambda ()
-             (if connection
-                 (XCloseDisplay connection))))))
-    ((with-x-display (connection) body ...)
-     (with-x-display (#f connection) body ...))))
-
 ;; (put 'with-return 'scheme-indent-function 1)
 ;; (font-lock-add-keywords 'scheme-mode '(("with-return" . font-lock-keyword-face)))
 (define-syntax with-return
@@ -69,30 +51,61 @@
        (condition . body)
        ...
        (else (error "unhandled event"))))))
-
-;;(event-loop (XNextEvent disp)
-;;   ((Expose) (display "expose\n")))
-
-(define (XNextEvent xdisplay) (cadr (XNextEvent% xdisplay)))
-
-;;(define (XButtonPressedEvent? event) (= (XEventType event) XButtonPress))
-
-
-(with-x-display (xdisplay)
-  (with-return (return)
-    (let ((xwindow (XCreateSimpleWindow
-                    xdisplay
-                    (XRootWindow xdisplay (XDefaultScreen xdisplay))
-                    0 0 800 600 1 0 0))
-          (xwmdelwinmsg (XInternAtom xdisplay "WM_DELETE_WINDOW" 0))
-	  )
-      (XSelectInput xdisplay xwindow (+ XButtonPressMask XExposureMask))
-      (XMapWindow xdisplay xwindow)
-      (XSetWMProtocols xdisplay xwindow xwmdelwinmsg 1)
-      (event-loop ((xevent (XNextEvent xdisplay)))
-	((XExposeEvent? xevent) (display "expose\n"))
-        ((XButtonPressedEvent? xevent) (display "button-press\n"))
-        ((XClientMessageEvent? xevent) (return 0))
-	(else (display* "unknown event: " xevent)))
-      )))
 )
+
+(let ((xdisplay (XOpenDisplay #f)))
+  (if xdisplay
+      (call-with-current-continuation 
+       (lambda (return)
+	 (let ((xwindow
+		(XCreateSimpleWindow
+		 xdisplay
+		 (XRootWindow xdisplay (XDefaultScreen xdisplay))
+		 0 0 800 600 1 0 0))
+	       (xwmdelwinmsg
+		(XInternAtom xdisplay "WM_DELETE_WINDOW" 0)))
+	   (-> xwmdelwinmsg)
+	   (XSelectInput xdisplay xwindow
+			 (+ XButtonPressMask XExposureMask))
+	   (XMapWindow xdisplay xwindow)
+	   (XSetWMProtocols xdisplay xwindow xwmdelwinmsg 1)
+	   (let loop ()
+	     (let ((xevent (XNextEvent xdisplay)))
+	       (cond
+		((XExposeEvent? xevent)
+		 (display "expose\n"))
+		((XButtonPressedEvent? xevent)
+		 (display "button-press\n"))
+		((XClientMessageEvent? xevent)
+		 (if (= (-> (XClientMessageEventDataAtom0 xevent))
+			xwmdelwinmsg)
+		     (return))))
+	       (loop))))))))
+
+(import (chibi ast))
+(gc)
+(XOpenDisplay #f)
+
+(let ()
+  (if #t
+      (call-with-current-continuation
+       (lambda (return)
+	 (return)))))
+
+(let ()
+  (if #t
+      (call-with-current-continuation
+       (lambda (return)
+	 (return)))))
+
+(eq? (call-with-current-continuation
+      (lambda (return)
+	(return)))
+     (if #f #t))
+
+(call-with-current-continuation (lambda (return) (return)))
+      (guard
+       (exception (else (XCloseDisplay xdisplay)
+			(raise exception)))
+
+       (XCloseDisplay xdisplay))))

@@ -38,9 +38,11 @@
 (define-c-int-type XWindow)
 (define-c-int-type XID)
 
+(c-declare "#define XCloseDisplay_debug(DISPLAY) do { printf(\"close display\\n\"); XCloseDisplay(DISPLAY); } while (0)")
+
 ;; Struct types
 (define-c-type XDepth predicate: XDepth?)
-(define-c-type XDisplay predicate: XDisplay?)
+(define-c-type XDisplay predicate: XDisplay? finalizer: XCloseDisplay_debug)
 (define-c-type XEvent predicate: XEvent?)
 (define-c-type XGC predicate: XGC?)
 (define-c-type XImage predicate: XImage?)
@@ -50,7 +52,7 @@
 
 ;; Functions from the XOpenDisplay man page
 (define-c (pointer XDisplay) XOpenDisplay ((maybe-null char*)))
-(define-c int XCloseDisplay ((pointer XDisplay)))
+;;(define-c int XCloseDisplay ((pointer XDisplay)))
 
 ;; Functions from the AllPlanes man page
 (define-c unsigned-long (XBlackPixel "BlackPixel")
@@ -133,7 +135,7 @@
 ;;(define-c XStatus XGetWMProtocols ((pointer XDisplay) XWindow (pointer XAtom*) (pointer int)))
 
 ;; Functions from the XNextEvent man page
-(define-c void (XNextEvent% "XNextEvent")
+(define-c void XNextEvent
   ((pointer XDisplay) (result pointer XEvent)))
 (define-c int XPeekEvent
   ((pointer XDisplay) (result pointer XEvent)))
