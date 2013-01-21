@@ -1,11 +1,14 @@
-all: finalizer.so
+all: finalizer.so nofinalizer.so
+	@echo ";;; Without finalizer"
+	chibi-scheme < nofinalizer.scm
+	@echo ";;; With finalizer"
 	chibi-scheme < finalizer.scm
 
-finalizer.so: finalizer.o
+%.so: %.o
 	gcc -shared -o $@ $^ -lchibi-scheme -lX11
 
-finalizer.c: finalizer.stub
+%.c: %.stub
 	chibi-ffi $<
 
-finalizer.o: finalizer.c
+%.o: %.c
 	gcc -fPIC -c $<
