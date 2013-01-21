@@ -1,0 +1,6 @@
+(c-system-include "X11/Xlib.h")
+(define-c-type Display predicate: Display? finalizer: XCloseDisplay)
+(define-c (pointer Display) XOpenDisplay ((maybe-null char*)))
+
+(c-system-include "stdlib.h")
+(define-c int system ((char*)))
