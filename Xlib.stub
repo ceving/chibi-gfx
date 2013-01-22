@@ -3,25 +3,7 @@
 (c-system-include "X11/Xlib.h")
 (c-system-include "X11/Xutil.h")
 
-;; Unification for types lacking the X prefix.
-(c-declare "typedef Atom XAtom;")
-(c-declare "typedef Colormap XColormap;")
-(c-declare "typedef Drawable XDrawable;")
-(c-declare "typedef Font XFont;")
-(c-declare "typedef GContext XGContext;")
-(c-declare "typedef KeySym XKeySym;")
-(c-declare "typedef Mask XMask;")
-(c-declare "typedef Pixmap XPixmap;")
-(c-declare "typedef Status XStatus;")
-(c-declare "typedef Time XTime;")
-(c-declare "typedef VisualID XVisualID;")
-(c-declare "typedef Window XWindow;")
-(c-declare "typedef Depth XDepth;")
-(c-declare "typedef Display XDisplay;")
-(c-declare "typedef GC XGC;")
-(c-declare "typedef Screen XScreen;")
-(c-declare "typedef ScreenFormat XScreenFormat;")
-(c-declare "typedef Visual XVisual;")
+(c-include "Xlib_helper.c")
 
 ;; Integer types
 (define-c-int-type XAtom)
@@ -38,11 +20,9 @@
 (define-c-int-type XWindow)
 (define-c-int-type XID)
 
-(c-declare "#define XCloseDisplay_debug(DISPLAY) do { printf(\"close display\\n\"); XCloseDisplay(DISPLAY); } while (0)")
-
 ;; Struct types
 (define-c-type XDepth predicate: XDepth?)
-(define-c-type XDisplay predicate: XDisplay? finalizer: XCloseDisplay_debug)
+(define-c-type XDisplay predicate: XDisplay? finalizer: XDisplayFinalizer)
 (define-c-type XEvent predicate: XEvent?)
 (define-c-type XGC predicate: XGC?)
 (define-c-type XImage predicate: XImage?)
@@ -51,110 +31,212 @@
 (define-c-type XVisual predicate: XVisual?)
 
 ;; Functions from the XOpenDisplay man page
-(define-c (pointer XDisplay) XOpenDisplay ((maybe-null char*)))
-;;(define-c int XCloseDisplay ((pointer XDisplay)))
+(define-c
+  (pointer free XDisplay)
+  (XOpenDisplay "XOpenDisplay_w")
+  ((maybe-null char*)))
+(define-c
+  void
+  (XCloseDisplay "XCloseDisplay_w")
+  ((pointer XDisplay)))
 
 ;; Functions from the AllPlanes man page
-(define-c unsigned-long (XBlackPixel "BlackPixel")
+(define-c
+  unsigned-long
+  (XBlackPixel "XBlackPixel_w")
   ((pointer XDisplay) int))
-(define-c unsigned-long (XWhitePixel "WhitePixel")
+(define-c
+  unsigned-long
+  (XWhitePixel "XWhitePixel_w")
   ((pointer XDisplay) int))
-(define-c int (XConnectionNumber "ConnectionNumber")
+(define-c
+  int
+  (XConnectionNumber "XConnectionNumber_w")
   ((pointer XDisplay)))
-(define-c XColormap (XDefaultColormap "DefaultColormap")
+(define-c
+  XColormap
+  (XDefaultColormap "XDefaultColormap_w")
   ((pointer XDisplay) int))
-(define-c int (XDefaultDepth "DefaultDepth")
+(define-c
+  int
+  (XDefaultDepth "XDefaultDepth_w")
   ((pointer XDisplay) int))
 ;; TODO: XListDepths produces a warning. I don't know why.
 ;; Xlib.c:193: warning: passing argument 2 of ‘sexp_make_integer’ makes integer from pointer without a cast
 ;; (define-c (pointer int) XListDepths ((pointer XDisplay) int (pointer int)))
-(define-c XGC (XDefaultGC "DefaultGC")
+(define-c
+  XGC
+  (XDefaultGC "XDefaultGC_w")
   ((pointer XDisplay) int))
-(define-c XWindow (XDefaultRootWindow "DefaultRootWindow")
+(define-c
+  XWindow
+  (XDefaultRootWindow "XDefaultRootWindow_w")
   ((pointer XDisplay)))
-(define-c (pointer XScreen) (XDefaultScreenOfDisplay "DefaultScreenOfDisplay")
+(define-c
+  (pointer XScreen)
+  (XDefaultScreenOfDisplay "XDefaultScreenOfDisplay_w")
   ((pointer XDisplay)))
-(define-c int (XDefaultScreen "DefaultScreen")
+(define-c
+  int
+  (XDefaultScreen "XDefaultScreen_w")
   ((pointer XDisplay)))
-(define-c (pointer XVisual) (XDefaultVisual "DefaultVisual")
+(define-c
+  (pointer XVisual)
+  (XDefaultVisual "XDefaultVisual_w")
   ((pointer XDisplay) int))
-(define-c int (XDisplayCells "DisplayCells")
+(define-c
+  int
+  (XDisplayCells "XDisplayCells_w")
   ((pointer XDisplay) int))
-(define-c int (XDisplayPlanes "DisplayPlanes")
+(define-c
+  int
+  (XDisplayPlanes "XDisplayPlanes_w")
   ((pointer XDisplay) int))
-(define-c char* (XDisplayString "DisplayString")
+(define-c
+  char*
+  (XDisplayString "XDisplayString_w")
   ((pointer XDisplay)))
-(define-c long XMaxRequestSize ((pointer XDisplay)))
-(define-c long XExtendedMaxRequestSize ((pointer XDisplay)))
-(define-c unsigned-long XLastKnownRequestProcessed
+(define-c
+  long
+  (XMaxRequestSize "XMaxRequestSize_w")
   ((pointer XDisplay)))
-(define-c unsigned-long (XNextRequest "NextRequest")
+(define-c
+  long
+  (XExtendedMaxRequestSize "XExtendedMaxRequestSize_w")
   ((pointer XDisplay)))
-(define-c int (XProtocolVersion "ProtocolVersion")
+(define-c
+  unsigned-long
+  (XLastKnownRequestProcessed "XLastKnownRequestProcessed_w")
   ((pointer XDisplay)))
-(define-c int (XProtocolRevision "ProtocolRevision")
+(define-c
+  unsigned-long
+  (XNextRequest "XNextRequest_w")
   ((pointer XDisplay)))
-(define-c int (XQLength "QLength")
+(define-c
+  int
+  (XProtocolVersion "XProtocolVersion_w")
   ((pointer XDisplay)))
-(define-c XWindow (XRootWindow "RootWindow")
+(define-c
+  int
+  (XProtocolRevision "XProtocolRevision_w")
+  ((pointer XDisplay)))
+(define-c
+  int
+  (XQLength "XQLength_w")
+  ((pointer XDisplay)))
+(define-c
+  XWindow
+  (XRootWindow "XRootWindow_w")
   ((pointer XDisplay) int))
-(define-c int (XScreenCount "ScreenCount")
+(define-c
+  int
+  (XScreenCount "XScreenCount_w")
   ((pointer XDisplay)))
-(define-c (pointer XScreen) (XScreenOfDisplay "ScreenOfDisplay")
+(define-c
+  (pointer XScreen)
+  (XScreenOfDisplay "XScreenOfDisplay_w")
   ((pointer XDisplay) int))
-(define-c char* (XServerVendor "ServerVendor")
+(define-c
+  char*
+  (XServerVendor "XServerVendor_w")
   ((pointer XDisplay)))
-(define-c int (XVendorRelease "VendorRelease")
+(define-c
+  int
+  (XVendorRelease "XVendorRelease_w")
   ((pointer XDisplay)))
 
 ;; Functions from the XCreateWindow man page
-(define-c XWindow XCreateSimpleWindow
+(define-c
+  XWindow
+  (XCreateSimpleWindow "XCreateSimpleWindow_w")
   ((pointer XDisplay) XWindow int int unsigned-int unsigned-int unsigned-int
    unsigned-long unsigned-long))
 
 ;; Functions from the XSelectInput man page
-(define-c int XSelectInput ((pointer XDisplay) XWindow long))
+(define-c
+  int
+  (XSelectInput "XSelectInput_w")
+  ((pointer XDisplay) XWindow long))
 
 ;; Functions from the XMapWindow man page
-(define-c int XMapWindow ((pointer XDisplay) XWindow))
-(define-c int XMapRaised ((pointer XDisplay) XWindow))
-(define-c int XMapSubwindows ((pointer XDisplay) XWindow))
+(define-c
+  int
+  (XMapWindow "XMapWindow_w")
+  ((pointer XDisplay) XWindow))
+(define-c
+  int
+  (XMapRaised "XMapRaised_w")
+  ((pointer XDisplay) XWindow))
+(define-c
+  int
+  (XMapSubwindows "XMapSubwindows_w")
+  ((pointer XDisplay) XWindow))
 
 ;; Functions from the XInternAtom man page
-(define-c XAtom XInternAtom ((pointer XDisplay) char* int))
-(define-c XStatus XInternAtoms
+(define-c
+  XAtom
+  (XInternAtom "XInternAtom_w")
+  ((pointer XDisplay) char* int))
+(define-c
+  XStatus
+  (XInternAtoms "XInternAtoms_w")
   ((pointer XDisplay) (pointer char*) int boolean (pointer XAtom)))
-(define-c char* XGetAtomName ((pointer XDisplay) XAtom))
-(define-c XStatus XGetAtomNames
+(define-c
+  char*
+  (XGetAtomName "XGetAtomName_w")
+  ((pointer XDisplay) XAtom))
+(define-c
+  XStatus
+  (XGetAtomNames "XGetAtomNames_w")
   ((pointer XDisplay) (pointer XAtom) int (pointer char*)))
 
 ;; Functions from the XSetWMProtocols man page
-(define-c XStatus XSetWMProtocols
+(define-c
+  XStatus
+  (XSetWMProtocols "XSetWMProtocols_w")
   ((pointer XDisplay) XWindow (pointer XAtom) int))
 ;; TODO: pointer of pointer (Atom**) not supported
 ;;(define-c XStatus XGetWMProtocols ((pointer XDisplay) XWindow (pointer XAtom*) (pointer int)))
 
 ;; Functions from the XNextEvent man page
-(define-c void XNextEvent
+(define-c
+  void
+  (XNextEvent "XNextEvent_w")
   ((pointer XDisplay) (result pointer XEvent)))
-(define-c int XPeekEvent
+(define-c
+  int
+  (XPeekEvent "XPeekEvent_w")
   ((pointer XDisplay) (result pointer XEvent)))
-(define-c int XWindowEvent
+(define-c
+  int
+  (XWindowEvent "XWindowEvent_w")
   ((pointer XDisplay) XWindow long (result pointer XEvent)))
-(define-c boolean XCheckWindowEvent
+(define-c
+  boolean
+  (XCheckWindowEvent "XCheckWindowEvent_w")
   ((pointer XDisplay) XWindow long (result pointer XEvent)))
-(define-c int XMaskEvent
+(define-c
+  int
+  (XMaskEvent "XMaskEvent_w")
   ((pointer XDisplay) long (result pointer XEvent)))
-(define-c boolean XCheckMaskEvent
+(define-c
+  boolean
+  (XCheckMaskEvent "XCheckMaskEvent_w")
   ((pointer XDisplay) long (result pointer XEvent)))
-(define-c boolean XCheckTypedEvent
+(define-c
+  boolean
+  (XCheckTypedEvent "XCheckTypedEvent_w")
   ((pointer XDisplay) int (result pointer XEvent)))
-(define-c boolean XCheckTypedWindowEvent
+(define-c
+  boolean
+  (XCheckTypedWindowEvent "XCheckTypedWindowEvent_w")
   ((pointer XDisplay) XWindow int (result pointer XEvent)))
 
 ;; Functions from the XCreateImage man page
 (define-c XStatus XInitImage ((pointer XImage)))
-(define-c (pointer XImage) XCreateImage
+(define-c
+  (pointer XImage)
+  (XCreateImage "XCreateImage_w")
   ((pointer XDisplay) (pointer XVisual) unsigned-int int int char*
    unsigned-int unsigned-int int int))
 (define-c unsigned-long XGetPixel ((pointer XImage) int int))
@@ -165,22 +247,33 @@
 (define-c int XDestroyImage ((pointer XImage)))
 
 ;; Functions from the XPutImage man page
-(define-c int XPutImage 
+(define-c
+  int
+  (XPutImage "XPutImage_w")
   ((pointer XDisplay) XDrawable XGC (pointer XImage) int int int int
    unsigned-int unsigned-int))
-(define-c (pointer XImage) XGetImage
+(define-c
+  (pointer XImage)
+  (XGetImage "XGetImage_w")
   ((pointer XDisplay) XDrawable int int unsigned-int unsigned-int
    unsigned-long int))
-(define-c (pointer XImage) XGetSubImage
+(define-c
+  (pointer XImage)
+  (XGetSubImage "XGetSubImage_w")
   ((pointer XDisplay) XDrawable int int unsigned-int unsigned-int
    unsigned-long int (pointer XImage) int int))
 
+;; Functions from the XUnmapWindow man page
+(define-c
+  int
+  (XUnmapWindow "XUnmapWindow_w")
+  ((pointer XDisplay) XWindow))
+(define-c
+  int
+  (XUnmapSubwindows "XUnmapSubwindows_w")
+  ((pointer XDisplay) XWindow))
+
 ;; XEvent (XAnyEvent)
-(c-declare "#define XEventType(event) ((event)->type)")
-(c-declare "#define XEventSerial(event) ((event)->xany.serial)")
-(c-declare "#define XEventSendEvent(event) ((event)->xany.send_event)")
-(c-declare "#define XEventDisplay(event) ((event)->xany.display)")
-(c-declare "#define XEventWindow(event) ((event)->xany.window)")
 (define-c int XEventType ((pointer XEvent)))
 (define-c unsigned-long XEventSerial ((pointer XEvent)))
 (define-c boolean XEventSendEvent ((pointer XEvent)))
@@ -188,22 +281,9 @@
 (define-c XWindow XEventWindow ((pointer XEvent)))
 
 ;; XButtonEvent
-(c-declare "#define XIsButtonPressedEvent(event) (XEventType(event) == ButtonPress)")
-(c-declare "#define XIsButtonReleasedEvent(event) (XEventType(event) == ButtonRelease)")
-(c-declare "#define XIsButtonEvent(event) (XIsButtonPressedEvent(event) || XIsButtonReleasedEvent(event))")
 (define-c boolean (XButtonPressedEvent? "XIsButtonPressedEvent") ((pointer XEvent)))
 (define-c boolean (XButtonReleasedEvent? "XIsButtonReleasedEvent") ((pointer XEvent)))
 (define-c boolean (XButtonEvent? "XIsButtonEvent") ((pointer XEvent)))
-(c-declare "#define XButtonEventRoot(event) ((event)->xbutton.root)")
-(c-declare "#define XButtonEventSubwindow(event) ((event)->xbutton.subwindow)")
-(c-declare "#define XButtonEventTime(event) ((event)->xbutton.time)")
-(c-declare "#define XButtonEventX(event) ((event)->xbutton.x)")
-(c-declare "#define XButtonEventY(event) ((event)->xbutton.y)")
-(c-declare "#define XButtonEventXRoot(event) ((event)->xbutton.x_root)")
-(c-declare "#define XButtonEventYRoot(event) ((event)->xbutton.y_root)")
-(c-declare "#define XButtonEventState(event) ((event)->xbutton.state)")
-(c-declare "#define XButtonEventButton(event) ((event)->xbutton.button)")
-(c-declare "#define XButtonEventSameScreen(event) ((event)->xbutton.same_screen)")
 (define-c XWindow (XButtonEventRoot "XButtonEventRoot") ((pointer XEvent)))
 (define-c XWindow (XButtonEventSubwindow "XButtonEventSubwindow") ((pointer XEvent)))
 (define-c XTime (XButtonEventTime "XButtonEventTime") ((pointer XEvent)))
@@ -216,13 +296,7 @@
 (define-c boolean (XButtonEventSameScreen "XButtonEventSameScreen") ((pointer XEvent)))
 
 ;; XExposeEvent
-(c-declare "#define XIsExposeEvent(event) (XEventType(event) == Expose)")
 (define-c boolean (XExposeEvent? "XIsExposeEvent") ((pointer XEvent)))
-(c-declare "#define XExposeEventX(event) ((event)->xexpose.x)")
-(c-declare "#define XExposeEventY(event) ((event)->xexpose.y)")
-(c-declare "#define XExposeEventWidth(event) ((event)->xexpose.width)")
-(c-declare "#define XExposeEventHeight(event) ((event)->xexpose.height)")
-(c-declare "#define XExposeEventCount(event) ((event)->xexpose.count)")
 (define-c int (XExposeEventX "XExposeEventX") ((pointer XEvent)))
 (define-c int (XExposeEventY "XExposeEventY") ((pointer XEvent)))
 (define-c int (XExposeEventWidth "XExposeEventWidth") ((pointer XEvent)))
@@ -230,17 +304,10 @@
 (define-c int (XExposeEventCount "XExposeEventCount") ((pointer XEvent)))
 
 ;; XClientMessageEvent
-(c-declare "#define XIsClientMessageEvent(event) (XEventType(event) == ClientMessage)")
 (define-c boolean (XClientMessageEvent? "XIsClientMessageEvent") ((pointer XEvent)))
-(c-declare "#define XClientMessageEventType(event) ((event)->xclient.message_type)")
-(c-declare "#define XClientMessageEventFormat(event) ((event)->xclient.format)")
-(c-declare "#define XClientMessageEventDataAtom0(event) ((event)->xclient.data.l[0])")
 (define-c XAtom XClientMessageEventType ((pointer XEvent)))
 (define-c int XClientMessageEventFormat ((pointer XEvent)))
 (define-c long XClientMessageEventDataAtom0 ((pointer XEvent)))
-
-;; C macros for other struct fields
-(c-declare "#define XVisualClass(visual) ((visual)->class)")
 
 ;; Some getter functions for other struct fields
 (define-c int XVisualClass ((pointer XVisual)))

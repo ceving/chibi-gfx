@@ -21,7 +21,7 @@ dist:
 #	install -D syslog.sld $(PREFIX)/share/chibi/posix/syslog.sld
 
 $(PROJECT).so: $(PROJECT).o
-	$(CC) -shared -o $@ $^ -lX11
+	$(CC) -shared -o $@ $^ -lchibi-scheme -lX11
 
 $(PROJECT).stub: Xlib.stub X.stub
 	cat $^ > $@
@@ -29,11 +29,8 @@ $(PROJECT).stub: Xlib.stub X.stub
 $(PROJECT).c: $(PROJECT).stub
 	chibi-ffi $<
 
-$(PROJECT).o: $(PROJECT).c
+$(PROJECT).o: $(PROJECT).c Xlib_helper.c
 	$(CC) $(CFLAGS) -c $<
-
-#$(MODULESO): $(MODULEC)
-#	$(CC) -fPIC -shared -lX11 -o $@ $<
 
 gfx: gfx.c
 	gcc -o gfx -lX11 -lm gfx.c
@@ -41,4 +38,3 @@ gfx: gfx.c
 X.stub: /usr/include/X11/X.h
 	echo '(c-system-include "X11/Xlib.h")' > $@
 	sed -n 's/^#define \([A-Z][a-zA-Z0-9]\+\).*/(define-c-const int (X\1 "\1"))/p' $< >> $@
-

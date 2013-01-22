@@ -57,55 +57,28 @@
   (if xdisplay
       (call-with-current-continuation 
        (lambda (return)
-	 (let ((xwindow
-		(XCreateSimpleWindow
-		 xdisplay
-		 (XRootWindow xdisplay (XDefaultScreen xdisplay))
-		 0 0 800 600 1 0 0))
-	       (xwmdelwinmsg
-		(XInternAtom xdisplay "WM_DELETE_WINDOW" 0)))
-	   (-> xwmdelwinmsg)
-	   (XSelectInput xdisplay xwindow
-			 (+ XButtonPressMask XExposureMask))
-	   (XMapWindow xdisplay xwindow)
-	   (XSetWMProtocols xdisplay xwindow xwmdelwinmsg 1)
-	   (let loop ()
-	     (let ((xevent (XNextEvent xdisplay)))
-	       (cond
-		((XExposeEvent? xevent)
-		 (display "expose\n"))
-		((XButtonPressedEvent? xevent)
-		 (display "button-press\n"))
-		((XClientMessageEvent? xevent)
-		 (if (= (-> (XClientMessageEventDataAtom0 xevent))
-			xwmdelwinmsg)
-		     (return))))
-	       (loop))))))))
-
-(import (chibi ast))
-(gc)
-(XOpenDisplay #f)
-
-(let ()
-  (if #t
-      (call-with-current-continuation
-       (lambda (return)
-	 (return)))))
-
-(let ()
-  (if #t
-      (call-with-current-continuation
-       (lambda (return)
-	 (return)))))
-
-(eq? (call-with-current-continuation
-      (lambda (return)
-	(return)))
-     (if #f #t))
-
-(call-with-current-continuation (lambda (return) (return)))
-      (guard
-       (exception (else (XCloseDisplay xdisplay)
-			(raise exception)))
-
-       (XCloseDisplay xdisplay))))
+         (let ((xwindow
+                (XCreateSimpleWindow
+                 xdisplay
+                 (XRootWindow xdisplay (XDefaultScreen xdisplay))
+                 0 0 800 600 1 0 0))
+               (xwmdelwinmsg
+                (XInternAtom xdisplay "WM_DELETE_WINDOW" 0)))
+           (XSelectInput xdisplay xwindow
+                         (+ XButtonPressMask XExposureMask))
+           (XMapWindow xdisplay xwindow)
+           (XSetWMProtocols xdisplay xwindow xwmdelwinmsg 1)
+           (let loop ()
+             (let ((xevent (XNextEvent xdisplay)))
+               (cond
+                ((XExposeEvent? xevent)
+                 (display "expose\n"))
+                ((XButtonPressedEvent? xevent)
+                 (display "button-press\n"))
+                ((XClientMessageEvent? xevent)
+                 (if (= (XClientMessageEventDataAtom0 xevent)
+                        xwmdelwinmsg)
+                     (begin 
+                       (XCloseDisplay xdisplay)
+                       (return (if #f #t)))))))
+             (loop)))))))
