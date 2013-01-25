@@ -99,9 +99,9 @@ int main(int argc, char **argv)
 
     draw_colors (ximage);
     for(;;) {
-	XEvent ev;
-	XNextEvent(display, &ev);
-	switch(ev.type) {
+	XEvent event;
+	XNextEvent(display, &event);
+	switch(event.type) {
 	case Expose:
 	    XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, width, height);
 	    break;
@@ -110,7 +110,11 @@ int main(int argc, char **argv)
 	    XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, width, height);
 	    break;
 	case ClientMessage:
-	    if (ev.xclient.data.l[0] == wmDeleteMessage) exit (0);
+	    if (event.xclient.data.l[0] == wmDeleteMessage) exit (0);
+	    break;
+	case ConfigureNotify:
+	    printf ("%d %d\n", event.xconfigure.width, event.xconfigure.height);
+	    break;
 	}
     }
 }
