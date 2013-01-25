@@ -20,7 +20,7 @@ typedef union pixel_s {
     unsigned long ul;
 } pixel_t;
 
-void draw_image (XImage *image)
+void draw_colors (XImage *image)
 {
     static int green = 1;
     int height = image->height;
@@ -74,27 +74,11 @@ XImage *CreateTrueColorImage(Display *display, Visual *visual, int width, int he
 {
     XImage *image = XCreateImage(display, visual, 24, ZPixmap, 0, NULL, width, height, 32, 0);
     image->data = (char*) malloc (width*height*4);
-    draw_image (image);
     return image;
 }
 
-void processEvent(Display *display, Window window, XImage *ximage, int width, int height)
-{
-    XEvent ev;
-    XNextEvent(display, &ev);
-    switch(ev.type)
-    {
-    case Expose:
-        XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, width, height);
-        break;
-    case ButtonPress:
-	draw_image (ximage);
-        XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, width, height);
-	break;
-    case ClientMessage:
-	if (ev.xclient.data.l[0] == wmDeleteMessage) exit (0);
-    }
-}
+#define DIE(FORMAT, ...) do { fprintf (stderr, FORMAT, ##__VA_ARGS__); exit (1); } while (0)
+#define DIE_IF(EXPR, FORMAT, ...) do { if (EXPR) DIE(FORMAT, ##__VA_ARGS__); } while (0)
 
 int main(int argc, char **argv)
 {
@@ -103,21 +87,30 @@ int main(int argc, char **argv)
     Display *display=XOpenDisplay(NULL);
     Visual *visual=DefaultVisual(display, 0);
     Window window=XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0, width, height, 1, 0, 0);
-    if(visual->class!=TrueColor)
-    {
-        fprintf(stderr, "Cannot handle non true color visual ...\n");
-        exit(1);
-    }
+    DIE_IF(visual->class!=TrueColor,
+	   "Cannot handle non true color visual ...\n");
 
     ximage=CreateTrueColorImage(display, visual, width, height);
-    XSelectInput(display, window, ButtonPressMask|ExposureMask);
+    XSelectInput(display, window, ButtonPressMask|ExposureMask|StructureNotifyMask);
     XMapWindow(display, window);
 
     wmDeleteMessage = XInternAtom (display, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(display, window, &wmDeleteMessage, 1);
 
-    while(1)
-    {
-        processEvent(display, window, ximage, width, height);
+    draw_colors (ximage);
+    for(;;) {
+	XEvent ev;
+	XNextEvent(display, &ev);
+	switch(ev.type) {
+	case Expose:
+	    XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, width, height);
+	    break;
+	case ButtonPress:
+	    draw_colors (ximage);
+	    XPutImage(display, window, DefaultGC(display, 0), ximage, 0, 0, 0, 0, width, height);
+	    break;
+	case ClientMessage:
+	    if (ev.xclient.data.l[0] == wmDeleteMessage) exit (0);
+	}
     }
 }
